@@ -1,4 +1,5 @@
-use std::{fs::File, io::Write};
+use std::{fs::{File, self}, io::{Write, Read, Seek}, str::Chars};
+use itertools::Itertools;
 
 const w: usize = 32;
 const n: usize = 624;
@@ -81,10 +82,40 @@ const fn lowest(shift: usize, x: usize) -> usize {
 fn main() {
     let mut tw = Twister::new(4); // ISO certified random number
     let mut file = File::create("numbers").unwrap();
+
     for _ in 0..10000 {
-        file.write_all(&tw.extract_number().to_le_bytes()).unwrap();
+        writeln!(file, "{:032b}", tw.extract_number()).unwrap();
     }
+
+    let mut str = String::new();
+    let mut file = File::open("numbers").unwrap();
+    file.read_to_string(&mut str).unwrap();
+
+
+    let mut file_post = File::create("numbers_post").unwrap();
+    file_post.write_all(to_von_neumann(&str).as_bytes()).unwrap();
 }
+
+fn to_von_neumann(str: &str) -> String {
+    let nums = str.split("\n").map(|line| von_neumann(line)).join("\n");
+    return nums
+}
+
+fn von_neumann(line : &str) -> String{
+    let mut res =   String::new();
+
+    for chn in &line.chars().chunks(2) {
+        let chunk: Vec<_> = chn.collect();
+        match chunk.as_slice() {
+            ['0', '1'] => res.push_str("0"),
+            ['1', '0'] => res.push_str("1"),
+            _ => {}
+        }      
+    }
+    
+    return res
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
