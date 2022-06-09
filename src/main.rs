@@ -116,6 +116,53 @@ fn von_neumann(line : &str) -> String{
     return res
 }
 
+fn hardware_combinatorial_trojan(idx: usize)  -> usize{
+    let mut triggered = false;
+    let mut mt_test = Twister::new(5489);
+    let fake_mersenne = [2, 3, 4, 5, 6, 7];
+    while !triggered {
+        let new = mt_test.extract_number();
+        //if the last digit of the generated number is 2, trigger the trojan
+        //this is intentionally a relatively common event such that we can observe the behavior of the trojan
+        //because this is a combinatorial trojan we want to monitor for a state rather than a sequence of inputs
+        if new % 10 == 2 {
+            triggered = true;
+        }
+    }
+    //payload
+    return fake_mersenne[idx];
+}
+
+fn hardware_sequential_trojan(idx:usize) -> usize {
+    let mut triggered = false;
+    let mut mt_test = Twister::new(5489);
+    let fake_mersenne = [2, 3, 4, 5, 6, 7];
+
+    let mut rands = Vec::new();
+
+    while !triggered {
+        let new = mt_test.extract_number();
+        rands.push(new);
+        
+        //if the last digit of the generated number is 2, trigger the trojan
+        //this is intentionally a relatively common event such that we can observe the behavior of the trojan
+        //this is a sequential trojan so we care about a sequence of inputs
+        if rands.len() > 2{
+            let mut temp = rands.clone();
+            temp.reverse();
+            let el1 = temp.get(0);
+            let el2 = temp.get(1);
+            if el1 % 2 == 0 && el2 % 2 == 0 {
+                triggered = true;
+            }
+        }
+
+    }
+    //payload
+    return fake_mersenne[idx];
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
