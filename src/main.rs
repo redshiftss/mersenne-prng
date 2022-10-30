@@ -126,10 +126,12 @@ fn hardware_combinatorial_trojan(idx: usize)  -> usize{
         //this is intentionally a relatively common event such that we can observe the behavior of the trojan
         //because this is a combinatorial trojan we want to monitor for a state rather than a sequence of inputs
         if new % 10 == 2 {
+            dbg!("triggered trojan");
             triggered = true;
         }
     }
     //payload
+    dbg!("deploying payload");
     return fake_mersenne[idx];
 }
 
@@ -150,15 +152,17 @@ fn hardware_sequential_trojan(idx:usize) -> usize {
         if rands.len() > 2{
             let mut temp = rands.clone();
             temp.reverse();
-            let el1 = temp.get(0);
-            let el2 = temp.get(1);
+            let el1 = temp.get(0).unwrap();
+            let el2 = temp.get(1).unwrap();
             if el1 % 2 == 0 && el2 % 2 == 0 {
+                dbg!("triggered trojan");
                 triggered = true;
             }
         }
 
     }
     //payload
+    dbg!("deploying payload");
     return fake_mersenne[idx];
 }
 
@@ -181,5 +185,10 @@ mod tests {
             assert!(!last.contains(&i));
             last.push(i);
         }
+    }
+
+    #[test]
+    fn attack(){
+        dbg!(hardware_sequential_trojan(3));
     }
 }
